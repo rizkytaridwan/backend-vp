@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db'); // Tambahkan ini
 
+
 module.exports = async function (req, res, next) {
     const token = req.header('x-auth-token');
     if (!token) return res.status(401).json({ msg: 'Akses ditolak, tidak ada token' });
