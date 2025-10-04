@@ -39,7 +39,11 @@ const buildTransactionQuery = (filters) => {
 };
 
 exports.getAllTransactions = async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    // --- PERBAIKAN DIMULAI DI SINI ---
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    // --- SELESAI PERBAIKAN ---
+
     const offset = (page - 1) * limit;
 
     try {
@@ -47,9 +51,10 @@ exports.getAllTransactions = async (req, res) => {
         
         const countParams = [...queryParams]; // Salin parameter untuk query count
         
+        // Tambahkan limit dan offset yang sudah aman ke parameter
         const finalSql = sql + ' ORDER BY t.transaction_date DESC LIMIT ? OFFSET ?';
-        queryParams.push(parseInt(limit));
-        queryParams.push(parseInt(offset));
+        queryParams.push(limit);
+        queryParams.push(offset);
 
         const [transactions] = await pool.execute(finalSql, queryParams);
         const [[{ total }]] = await pool.execute(countSql, countParams);
@@ -57,7 +62,7 @@ exports.getAllTransactions = async (req, res) => {
         res.json({
             transactions,
             totalPages: Math.ceil(total / limit),
-            currentPage: parseInt(page)
+            currentPage: page
         });
     } catch (err) {
         console.error(err.message);

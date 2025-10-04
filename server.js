@@ -1,12 +1,25 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const pool = require('./config/db'); // Kita akan buat file ini
+const helmet = require('helmet');
+const pool = require('./config/db'); 
 
 const app = express();
 
+app.use(helmet());
+
 // Middleware
-app.use(cors());
+const whitelist = ['http://localhost:3000', 'https://domain-frontend-anda.com'];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Tidak diizinkan oleh CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Cek Koneksi DB

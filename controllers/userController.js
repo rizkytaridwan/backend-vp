@@ -4,7 +4,14 @@ const bcrypt = require('bcryptjs');
 
 // Mengambil semua user
 exports.getAllUsers = async (req, res) => {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    // --- PERBAIKAN DIMULAI DI SINI ---
+    // Pastikan page dan limit adalah angka integer yang valid.
+    // Jika input tidak valid (misal: "abc"), gunakan nilai default.
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || '';
+    // --- SELESAI PERBAIKAN ---
+
     const offset = (page - 1) * limit;
     const searchQuery = `%${search}%`;
 
@@ -19,7 +26,7 @@ exports.getAllUsers = async (req, res) => {
              WHERE (u.full_name LIKE ? OR u.telegram_username LIKE ?)
              ORDER BY u.created_at DESC
              LIMIT ? OFFSET ?`,
-            [searchQuery, searchQuery, parseInt(limit), parseInt(offset)]
+            [searchQuery, searchQuery, limit, offset] // Gunakan limit dan offset yang sudah aman
         );
 
         // Query untuk menghitung total data yang cocok
@@ -31,7 +38,7 @@ exports.getAllUsers = async (req, res) => {
         res.json({
             users,
             totalPages: Math.ceil(total / limit),
-            currentPage: parseInt(page)
+            currentPage: page
         });
 
     } catch (err) {

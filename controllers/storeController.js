@@ -4,7 +4,12 @@ const pool = require('../config/db');
 
 // GET /api/stores - Mengambil semua toko
 exports.getAllStores = async (req, res) => {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    // --- PERBAIKAN DIMULAI DI SINI ---
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || '';
+    // --- SELESAI PERBAIKAN ---
+
     const offset = (page - 1) * limit;
     const searchQuery = `%${search}%`;
 
@@ -15,7 +20,7 @@ exports.getAllStores = async (req, res) => {
              WHERE (name LIKE ? OR address LIKE ?)
              ORDER BY name ASC 
              LIMIT ? OFFSET ?`,
-            [searchQuery, searchQuery, parseInt(limit), parseInt(offset)]
+            [searchQuery, searchQuery, limit, offset] // Gunakan limit dan offset yang sudah aman
         );
 
         // Query untuk menghitung total data yang cocok (untuk total halaman)
@@ -27,7 +32,7 @@ exports.getAllStores = async (req, res) => {
         res.json({
             stores,
             totalPages: Math.ceil(total / limit),
-            currentPage: parseInt(page)
+            currentPage: page
         });
     } catch (err) {
         console.error(err.message);
