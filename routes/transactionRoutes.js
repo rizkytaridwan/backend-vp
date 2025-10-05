@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getAllTransactions, exportTransactions } = require('../controllers/transactionController');
+const { getAllTransactions, exportTransactions, exportSummary, exportSelisihReport } = require('../controllers/transactionController');
 const auth = require('../middleware/authMiddleware');
-const { exportSummary } = require('../controllers/transactionController');
 
 router.get('/', auth, getAllTransactions);
 router.get('/export', auth, exportTransactions);
 router.get('/summary-export', auth, exportSummary);
+// Rute baru untuk laporan selisih
+router.get('/export-selisih', auth, exportSelisihReport);
 
 module.exports = router;

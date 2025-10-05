@@ -1,3 +1,5 @@
+// server.js (pastikan isinya seperti ini)
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');

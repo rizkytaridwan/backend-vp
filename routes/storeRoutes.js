@@ -1,16 +1,12 @@
-// admin-dashboard-backend/src/routes/storeRoutes.js
-
 const express = require('express');
 const router = express.Router();
-// Ditambahkan 'param' untuk validasi ID di URL
-const { body, param, validationResult } = require('express-validator'); 
+const { body, param, validationResult } = require('express-validator');
 
 const { getAllStores, createStore, updateStore, deleteStore } = require('../controllers/storeController');
 const auth = require('../middleware/authMiddleware');
-// Middleware 'admin' perlu di-import untuk digunakan
-const admin = require('../middleware/adminMiddleware'); 
+const admin = require('../middleware/adminMiddleware');
 
-// Middleware ini sudah bagus, kita akan pakai di semua route yang butuh validasi
+// Middleware untuk menangani error validasi
 const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -19,38 +15,41 @@ const handleValidationErrors = (req, res, next) => {
     next();
 };
 
+// GET /api/stores
 router.get('/', auth, getAllStores);
 
+// POST /api/stores
 router.post('/',
-    [ // Kelompokkan middleware dalam satu array agar lebih rapi
-        auth,
-        admin // Menambahkan admin check untuk membuat toko
-    ],
-    [ // Aturan validasi
+    [auth, admin],
+    [
         body('name', 'Nama toko tidak boleh kosong').not().isEmpty().trim().escape(),
-        body('address', 'Alamat tidak valid').optional().trim().escape(),
-        body('phone', 'Nomor telepon tidak valid').optional().trim().escape()
+        body('address').optional().trim().escape(),
+        body('phone').optional({ checkFalsy: true }).trim().escape() // checkFalsy mengizinkan string kosong
     ],
-    handleValidationErrors, // Gunakan middleware yang sudah dibuat, hindari duplikasi
+    handleValidationErrors,
     createStore
 );
 
+// PUT /api/stores/:id
 router.put('/:id',
-    [auth, admin], // Ini sudah benar
+    [auth, admin],
     [
         param('id').isInt({ min: 1 }).withMessage('ID Toko harus valid'),
-        body('name', 'Nama toko tidak boleh kosong').optional().not().isEmpty().trim().escape(),
-        body('address', 'Alamat tidak valid').optional().trim().escape(),
-        body('phone', 'Nomor telepon tidak valid').optional().isMobilePhone('id-ID').withMessage('Format nomor telepon salah'),
-        body('status').optional().isIn(['active', 'inactive']).withMessage("Status harus 'active' atau 'inactive'")
+        body('name', 'Nama toko tidak boleh kosong').not().isEmpty().trim().escape(),
+        body('address').optional().trim().escape(),
+        // PERBAIKAN: Menghapus isMobilePhone yang terlalu ketat dan mengizinkan field kosong
+        body('phone', 'Nomor telepon tidak valid').optional({ checkFalsy: true }).trim().escape(),
+        body('status').optional().isIn(['active', 'inactive']).withMessage("Status harus 'active' atau 'inactive'"),
+        body('region_id', 'Regional harus dipilih').not().isEmpty()
     ],
     handleValidationErrors,
     updateStore
 );
 
+// DELETE /api/stores/:id
 router.delete('/:id',
-    [auth, admin], // Sebaiknya hanya admin yang bisa menghapus
-    [ // Tambahkan validasi untuk ID saat menghapus
+    [auth, admin],
+    [
         param('id').isInt({ min: 1 }).withMessage('ID Toko harus valid')
     ],
     handleValidationErrors,
