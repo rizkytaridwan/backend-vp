@@ -11,17 +11,7 @@ const app = express();
 app.use(helmet());
 
 // Middleware
-const whitelist = ['http://localhost:3000', 'https://react-vp-production.up.railway.app'];
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true);
-        } else {
-            callback(new Error('Tidak diizinkan oleh CORS'));
-        }
-    }
-};
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 // Cek Koneksi DB
