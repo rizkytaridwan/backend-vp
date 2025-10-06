@@ -1,4 +1,4 @@
-// server.js (pastikan isinya seperti ini)
+// server.js (KODE FINAL YANG SUDAH DIPERBAIKI)
 
 require('dotenv').config();
 const express = require('express');
@@ -8,11 +8,19 @@ const pool = require('./config/db');
 
 const app = express();
 
+// --- PERBAIKAN PENTING ---
+// Baris ini memberitahu Express untuk mempercayai proxy dari Railway.
+// Ini akan menghentikan crash loop.
+app.set('trust proxy', 1); 
+
 app.use(helmet());
 
-// Middleware
+// Middleware CORS yang lebih baik (mengizinkan localhost dan domain produksi)
 app.use(cors({
-  origin: 'https://react-vp-production.up.railway.app',
+  origin: [
+    'http://localhost:3000', 
+    'https://react-vp-production.up.railway.app'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
