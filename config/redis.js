@@ -14,4 +14,4 @@ client.on('error', (err) => console.error('❌ Redis Client Error', err));
     console.log('✅ Koneksi ke Redis berhasil.');
 })();
 
-module.exports = client;
+module.exports = null; 
