@@ -9,7 +9,7 @@ const pool = require('./config/db');
 const app = express();
 
 app.use(helmet());
-
+app.set('trust proxy', 1);
 // Middleware
 app.use(cors({
   origin: [
