@@ -11,7 +11,7 @@ const app = express();
 app.use(helmet());
 
 // Middleware
-const whitelist = ['http://localhost:3000', 'https://domain-frontend-anda.com'];
+const whitelist = ['http://localhost:3000', 'https://react-vp-production.up.railway.app'];
 const corsOptions = {
     origin: function (origin, callback) {
         if (whitelist.indexOf(origin) !== -1 || !origin) {
