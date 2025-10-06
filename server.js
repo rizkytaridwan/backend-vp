@@ -8,9 +8,9 @@ const pool = require('./config/db');
 
 const app = express();
 
-// --- PERBAIKAN PENTING ---
+// --- PERBAIKAN PENTING ADA DI SINI ---
 // Baris ini memberitahu Express untuk mempercayai proxy dari Railway.
-// Ini akan menghentikan crash loop.
+// Ini akan menghentikan crash loop yang disebabkan oleh express-rate-limit.
 app.set('trust proxy', 1); 
 
 app.use(helmet());
