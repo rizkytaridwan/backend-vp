@@ -11,7 +11,11 @@ const app = express();
 app.use(helmet());
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://react-vp-production.up.railway.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Cek Koneksi DB
