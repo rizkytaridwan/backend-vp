@@ -54,8 +54,8 @@ exports.updateUser = async (req, res) => {
 
     try {
         await pool.execute(
-            'UPDATE users SET role_id = ?, store_id = ?, region_id = ?, status = ? WHERE id = ?',
-            [role_id, store_id || null, region_id || null, status, id]
+            'UPDATE users SET role_id = ?, store_id = ?, region_id = ?, status = ?, active_store_id = ? WHERE id = ?',
+            [role_id, store_id || null, region_id || null, status, store_id || null, id]
         );
         res.json({ msg: 'User berhasil diupdate' });
     } catch (err) {
