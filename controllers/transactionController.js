@@ -64,8 +64,12 @@ exports.getAllTransactions = async (req, res) => {
         
         const finalSql = sql + ' ORDER BY t.transaction_date DESC LIMIT ? OFFSET ?';
         const finalQueryParams = [...queryParams, limit, offset];
-
+        console.log('Executing transactions query:', finalSql);
+        console.log('With params:', finalQueryParams);
         const [transactions] = await pool.execute(finalSql, finalQueryParams);
+
+        console.log('Executing count query:', countSql);
+        console.log('With params:', countQueryParams);
         const [[{ total }]] = await pool.execute(countSql, countQueryParams);
         
         res.json({
