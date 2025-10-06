@@ -1,4 +1,4 @@
-// server.js (KODE FINAL YANG SUDAH DIPERBAIKI)
+// server.js
 
 require('dotenv').config();
 const express = require('express');
@@ -10,12 +10,12 @@ const app = express();
 
 // --- PERBAIKAN PENTING ADA DI SINI ---
 // Baris ini memberitahu Express untuk mempercayai proxy dari Railway.
-// Ini akan menghentikan crash loop yang disebabkan oleh express-rate-limit.
+// Ini akan menghentikan crash loop.
 app.set('trust proxy', 1); 
 
 app.use(helmet());
 
-// Middleware CORS yang lebih baik (mengizinkan localhost dan domain produksi)
+// Middleware CORS
 app.use(cors({
   origin: [
     'http://localhost:3000', 
