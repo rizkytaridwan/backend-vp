@@ -7,26 +7,35 @@ const buildTransactionQuery = (filters) => {
     const searchQuery = `%${search}%`;
 
     let queryParams = [searchQuery, searchQuery, searchQuery];
+
+    // --- QUERY UTAMA YANG DIPERBAIKI ---
     let sql = `
         SELECT 
             t.id, t.invoice_number, t.cashier_name, 
             s.name as store_name, r.name as region_name, 
             u.full_name as user_name, t.payment_method, t.total_amount, t.transaction_date,
-            (t.total_amount - COALESCE(SUM(ti.quantity * ti.price_vp), 0)) AS selisih
+            (
+                t.total_amount - (
+                    SELECT COALESCE(SUM(ti.quantity * ti.price_vp), 0) 
+                    FROM transaction_items ti 
+                    WHERE ti.transaction_id = t.id
+                )
+            ) AS selisih
         FROM transactions t
         LEFT JOIN stores s ON t.store_id = s.id
         LEFT JOIN regions r ON s.region_id = r.id
         LEFT JOIN users u ON t.user_id = u.id
-        LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
         WHERE (t.invoice_number LIKE ? OR t.cashier_name LIKE ? OR t.payment_method LIKE ?)
     `;
+
+    // --- QUERY HITUNG YANG DIPERBAIKI ---
     let countSql = `
-        SELECT COUNT(DISTINCT t.id) as total
+        SELECT COUNT(t.id) as total
         FROM transactions t
         LEFT JOIN stores s ON t.store_id = s.id
         WHERE (t.invoice_number LIKE ? OR t.cashier_name LIKE ? OR t.payment_method LIKE ?)
     `;
-    
+
     let countQueryParams = [...queryParams];
 
     if (storeId && storeId !== 'all') {
@@ -40,7 +49,7 @@ const buildTransactionQuery = (filters) => {
         queryParams.push(regionId);
         countQueryParams.push(regionId);
     }
-    
+
     if (startDate && endDate) {
         sql += ' AND t.transaction_date BETWEEN ? AND ?';
         countSql += ' AND t.transaction_date BETWEEN ? AND ?';
@@ -48,8 +57,6 @@ const buildTransactionQuery = (filters) => {
         queryParams.push(startDate, dateEnd);
         countQueryParams.push(startDate, dateEnd);
     }
-
-    sql += ' GROUP BY t.id';
 
     return { sql, countSql, queryParams, countQueryParams };
 };
