@@ -10,26 +10,25 @@ exports.getAllUsers = async (req, res) => {
     const searchQuery = `%${search}%`;
 
     try {
-        const [users] = await pool.execute(
-            `SELECT 
+        const sql = `SELECT 
                 u.id, u.telegram_chat_id, u.telegram_username, u.full_name, u.status,
                 r.name AS role_name,
                 rg.name AS region_name,
-                -- Logika baru: Ambil nama toko utama, jika tidak ada, ambil nama toko aktif
                 COALESCE(s_utama.name, s_aktif.name) AS store_name,
                 u.role_id, u.store_id, u.region_id
              FROM users u
              LEFT JOIN roles r ON u.role_id = r.id
              LEFT JOIN regions rg ON u.region_id = rg.id
-             -- Join untuk mendapatkan nama toko utama (berdasarkan store_id)
              LEFT JOIN stores s_utama ON u.store_id = s_utama.id
-             -- Join untuk mendapatkan nama toko aktif (berdasarkan active_store_id)
              LEFT JOIN stores s_aktif ON u.active_store_id = s_aktif.id
              WHERE (u.full_name LIKE ? OR u.telegram_username LIKE ?)
-             ORDER BY u.created_at DESC
-             LIMIT ? OFFSET ?`,
-             [searchQuery, searchQuery, limit, offset]
-        );
+             ORDER BY u.created_at DESC`;
+
+        // PERBAIKAN: Terapkan LIMIT dan OFFSET langsung ke string
+        const finalSql = `${sql} LIMIT ${limit} OFFSET ${offset}`;
+        const queryParams = [searchQuery, searchQuery];
+
+        const [users] = await pool.execute(finalSql, queryParams);
 
         const [[{ total }]] = await pool.execute(
             'SELECT COUNT(id) as total FROM users WHERE (full_name LIKE ? OR telegram_username LIKE ?)',
@@ -43,8 +42,8 @@ exports.getAllUsers = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("!!! ERROR in getAllUsers:", err);
+        res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
 // Mengupdate user (role, store, region, status)

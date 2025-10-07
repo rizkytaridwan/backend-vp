@@ -9,15 +9,17 @@ exports.getAllStores = async (req, res) => {
     const searchQuery = `%${search}%`;
 
     try {
-        const [stores] = await pool.execute(
-            `SELECT s.*, r.name as region_name 
+        const sql = `SELECT s.*, r.name as region_name 
              FROM stores s
              LEFT JOIN regions r ON s.region_id = r.id
              WHERE (s.name LIKE ? OR s.address LIKE ?)
-             ORDER BY s.name ASC 
-             LIMIT ? OFFSET ?`,
-            [searchQuery, searchQuery, limit, offset]
-        );
+             ORDER BY s.name ASC`;
+        
+        // PERBAIKAN: Terapkan LIMIT dan OFFSET langsung ke string
+        const finalSql = `${sql} LIMIT ${limit} OFFSET ${offset}`;
+        const queryParams = [searchQuery, searchQuery];
+
+        const [stores] = await pool.execute(finalSql, queryParams);
 
         const [[{ total }]] = await pool.execute(
             'SELECT COUNT(id) as total FROM stores WHERE (name LIKE ? OR address LIKE ?)',
@@ -30,8 +32,8 @@ exports.getAllStores = async (req, res) => {
             currentPage: page
         });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("!!! ERROR in getAllStores:", err);
+        res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
 
