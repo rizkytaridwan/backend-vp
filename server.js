@@ -14,7 +14,7 @@ app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'http://localhost:3000', 
-    'https://react-vp-production.up.railway.app'
+    'https://villaparfum.up.railway.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'], // <-- TAMBAHKAN BARIS INI
