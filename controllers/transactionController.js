@@ -61,7 +61,7 @@ const buildTransactionQuery = (filters) => {
 
 // --- FUNGSI UTAMA YANG DIPERBAIKI DENGAN LOGGING ---
 exports.getAllTransactions = async (req, res) => {
-    console.log('Fetching transactions with query params:', req.query); // Log request query
+    console.log('Fetching transactions with query params:', req.query);
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
@@ -69,27 +69,24 @@ exports.getAllTransactions = async (req, res) => {
     try {
         const { sql, countSql, queryParams, countQueryParams } = buildTransactionQuery(req.query);
         
-        const finalSql = sql + ' ORDER BY t.transaction_date DESC LIMIT ? OFFSET ?';
-        const finalQueryParams = [...queryParams, limit, offset];
-
-        // Log sebelum eksekusi query utama
+        // PERBAIKAN: Masukkan limit dan offset langsung ke query string
+        const finalSql = `${sql} ORDER BY t.transaction_date DESC LIMIT ${limit} OFFSET ${offset}`;
+        // PERBAIKAN: finalQueryParams sekarang tidak lagi berisi limit dan offset
+        const finalQueryParams = [...queryParams]; 
+        
         console.log('--- Executing Main Query ---');
         console.log('SQL:', finalSql);
         console.log('Params:', JSON.stringify(finalQueryParams));
-
+        // Gunakan finalQueryParams yang sudah benar
         const [transactions] = await pool.execute(finalSql, finalQueryParams);
         
-        // Log setelah eksekusi query utama
         console.log(`--> Main query returned ${transactions.length} rows.`);
 
-        // Log sebelum eksekusi query hitung
         console.log('--- Executing Count Query ---');
         console.log('SQL:', countSql);
         console.log('Params:', JSON.stringify(countQueryParams));
-
         const [[{ total }]] = await pool.execute(countSql, countQueryParams);
-
-        // Log setelah eksekusi query hitung
+        
         console.log(`--> Count query returned a total of ${total}.`);
         
         res.json({
@@ -98,7 +95,6 @@ exports.getAllTransactions = async (req, res) => {
             currentPage: page
         });
     } catch (err) {
-        // Log jika terjadi error
         console.error('!!! ERROR in getAllTransactions:', err);
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
